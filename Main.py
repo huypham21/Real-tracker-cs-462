@@ -54,12 +54,12 @@ class Toplevel1:
         _ana1color = '#d9d9d9' # X11 color: 'gray85'
         _ana2color = '#ececec' # Closest X11 color: 'gray92'
 
-        top.geometry("1024x600+650+150")
+        top.geometry("700x400")
         top.title("New Toplevel")
         top.configure(background="#500")
 
         self.Button1 = tk.Button(top)
-        self.Button1.place(relx=0.059, rely=0.167, height=150, width=900)
+        self.Button1.place(relx=0.035, rely=0.167, height=100, width=600)
         self.Button1.configure(activebackground="#ececec")
         self.Button1.configure(activeforeground="#000000")
         self.Button1.configure(background="#fff")
@@ -70,10 +70,10 @@ class Toplevel1:
         self.Button1.configure(highlightcolor="black")
         self.Button1.configure(pady="0")
         self.Button1.configure(text='''Start New''')
-        self.Button1.configure(width=878)
+        self.Button1.configure(width=700)
 
         self.Button1_1 = tk.Button(top)
-        self.Button1_1.place(relx=0.059, rely=0.433, height=150, width=900)
+        self.Button1_1.place(relx=0.035, rely=0.433, height=100, width=600)
         self.Button1_1.configure(activebackground="#ececec")
         self.Button1_1.configure(activeforeground="#000000")
         self.Button1_1.configure(background="#fff")
@@ -86,7 +86,7 @@ class Toplevel1:
         self.Button1_1.configure(text='''Options''')
 
         self.Button1_2 = tk.Button(top)
-        self.Button1_2.place(relx=0.059, rely=0.7, height=150, width=900)
+        self.Button1_2.place(relx=0.035, rely=0.7, height=100, width=600)
         self.Button1_2.configure(activebackground="#ececec")
         self.Button1_2.configure(activeforeground="#000000")
         self.Button1_2.configure(background="#fff")
@@ -99,8 +99,7 @@ class Toplevel1:
         self.Button1_2.configure(text='''Quit''')
 
         self.Message1 = tk.Message(top)
-        self.Message1.place(relx=0.059, rely=0.0, relheight=0.167
-                , relwidth=0.879)
+        self.Message1.place(relx=0.0, rely=0.0, relheight=0.167, relwidth=1.0)
         self.Message1.configure(background="#500")
         self.Message1.configure(font="-family {Segoe UI} -size 24")
         self.Message1.configure(foreground="#fff")
