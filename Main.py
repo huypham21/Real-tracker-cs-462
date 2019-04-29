@@ -6,6 +6,7 @@
 #    Apr 27, 2019 11:56:32 AM CDT  platform: Windows NT
 
 import sys 
+import time
  
 try:
     import Tkinter as tk
@@ -20,7 +21,126 @@ except ImportError as e:
     py3 = True
     
 import Main_support
- 
+import OptionMenu_support
+
+######################################Global Variable Defaults######################################
+roomCap = 200
+roomOcc = 0
+roomCount = 0
+totalCount = 0
+timeElapsed = 0
+maxPeople = 0
+timeIn = time.time()
+timeOut = time.time()
+eventName = ''
+####################################################################################################
+
+########################## Option Menu ###############################
+def create_OptionMenu(root, *args, **kwargs):
+    '''Starting point when module is imported by another program.'''
+    global w, w_win, rt
+    rt = root
+    w = tk.Toplevel (root)
+    OptionMenu_support.set_Tk_var()
+    top = OptionMenu (w)
+    OptionMenu_support.init(w, top, *args, **kwargs)
+    return (w, top)
+
+def destroy_OptionMenu():
+    global w
+    w.destroy()
+    w = None
+
+def getName(event):
+    eventName = event.widget.get()
+    print("New event name: %s" % eventName)
+
+def updateBox(event):
+    roomCap = int(event.widget.get())
+    print("New Room Cap: %d" % roomCap)
+
+def updateBoxClick(event):
+    roomCap = int(event.get())
+    print("New room cap: %d" % roomCap)
+
+class OptionMenu:
+    def __init__(self, top=None):
+        '''This class configures and populates the toplevel window.
+           top is the toplevel containing window.'''
+        _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
+        _fgcolor = '#000000'  # X11 color: 'black'
+        _compcolor = '#d9d9d9' # X11 color: 'gray85'
+        _ana1color = '#d9d9d9' # X11 color: 'gray85'
+        _ana2color = '#ececec' # Closest X11 color: 'gray92'
+        top.geometry("700x400")
+        top.title("New Toplevel")
+        top.configure(background="#500")
+        top.configure(pady="1")
+
+        top.Spinbox1 = tk.Spinbox(top, from_=1.0, to=100.0)
+        top.Spinbox1.place(relx=0.386, rely=0.275, relheight=0.1
+                , relwidth=0.214)
+        top.Spinbox1.configure(activebackground="#f9f9f9")
+        top.Spinbox1.configure(background="white")
+        top.Spinbox1.configure(buttonbackground="#d9d9d9")
+        top.Spinbox1.configure(disabledforeground="#a3a3a3")
+        top.Spinbox1.configure(foreground="#500")
+        top.Spinbox1.configure(highlightbackground="black")
+        top.Spinbox1.configure(highlightcolor="black")
+        top.Spinbox1.configure(insertbackground="black")
+        top.Spinbox1.configure(selectbackground="#c4c4c4")
+        top.Spinbox1.configure(selectforeground="black")
+        top.Spinbox1.configure(textvariable=OptionMenu_support.spinbox)
+        top.Spinbox1.configure(width=148)
+        top.Spinbox1.configure(command = lambda: updateBoxClick(top.Spinbox1))
+        top.Spinbox1.bind('<Return>', updateBox)
+
+        top.Message1 = tk.Message(top)
+        top.Message1.place(relx=0.0, rely=0.0, relheight=0.25, relwidth=1.0)
+        top.Message1.configure(background="#500")
+        top.Message1.configure(font="-family {Segoe UI} -size 16")
+        top.Message1.configure(foreground="#fff")
+        top.Message1.configure(highlightbackground="#d9d9d9")
+        top.Message1.configure(highlightcolor="black")
+        top.Message1.configure(text='''Room Capacity:''')
+        top.Message1.configure(width=700)
+
+        top.Message1_1 = tk.Message(top)
+        top.Message1_1.place(relx=0.0, rely=0.375, relheight=0.25, relwidth=1.0)
+
+        top.Message1_1.configure(background="#500")
+        top.Message1_1.configure(font="-family {Segoe UI} -size 16")
+        top.Message1_1.configure(foreground="#fff")
+        top.Message1_1.configure(highlightbackground="#d9d9d9")
+        top.Message1_1.configure(highlightcolor="black")
+        top.Message1_1.configure(text='''Event Name:''')
+        top.Message1_1.configure(width=700)
+
+        top.Entry1 = tk.Entry(top)
+        top.Entry1.place(relx=0.0, rely=0.563,height=50, relwidth=1.0)
+        top.Entry1.configure(background="white")
+        top.Entry1.configure(disabledforeground="#a3a3a3")
+        top.Entry1.configure(font="TkFixedFont")
+        top.Entry1.configure(foreground="#500")
+        top.Entry1.configure(insertbackground="black")
+        top.Entry1.bind('<Return>', getName)
+
+        top.Button1 = tk.Button(top)
+        top.Button1.place(relx=0.343, rely=0.713, height=100, width=200)
+        top.Button1.configure(activebackground="#ececec")
+        top.Button1.configure(activeforeground="#000000")
+        top.Button1.configure(background="#fff")
+        top.Button1.configure(disabledforeground="#a3a3a3")
+        top.Button1.configure(font="-family {Segoe UI} -size 12")
+        top.Button1.configure(foreground="#500")
+        top.Button1.configure(highlightbackground="#d9d9d9")
+        top.Button1.configure(highlightcolor="black")
+        top.Button1.configure(pady="0")
+        top.Button1.configure(text='''Done''')
+        top.Button1.configure(command = top.destroy)
+
+
+################################# Main Menu ##################################
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
     global val, w, root
@@ -29,7 +149,7 @@ def vp_start_gui():
     Main_support.init(root, top)
     root.mainloop()
  
-w = None
+w = tk
 def create_Toplevel1(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
     global w, w_win, rt
@@ -44,7 +164,22 @@ def destroy_Toplevel1():
     w.destroy()
     w = None
 
+def startNew():
+        print("New Counter!")
+        #new Counter
+
+def optionMenu(self):
+        print("Option Menu")
+        create_OptionMenu(self)
+        #Pull up option window
+
+def closeIt(self):
+        self.close
+
+
 class Toplevel1:
+    
+
     def __init__(self, top=None):
         '''This class configures and populates the toplevel window.
            top is the toplevel containing window.'''
@@ -53,50 +188,53 @@ class Toplevel1:
         _compcolor = '#d9d9d9' # X11 color: 'gray85'
         _ana1color = '#d9d9d9' # X11 color: 'gray85'
         _ana2color = '#ececec' # Closest X11 color: 'gray92'
-
+        #top = tk.Frame
+        top.configure()
         top.geometry("700x400")
         top.title("New Toplevel")
         top.configure(background="#500")
 
-        self.Button1 = tk.Button(top)
-        self.Button1.place(relx=0.035, rely=0.167, height=100, width=600)
-        self.Button1.configure(activebackground="#ececec")
-        self.Button1.configure(activeforeground="#000000")
-        self.Button1.configure(background="#fff")
-        self.Button1.configure(disabledforeground="#a3a3a3")
-        self.Button1.configure(font="-family {Segoe UI} -size 24")
-        self.Button1.configure(foreground="#500")
-        self.Button1.configure(highlightbackground="#d9d9d9")
-        self.Button1.configure(highlightcolor="black")
-        self.Button1.configure(pady="0")
-        self.Button1.configure(text='''Start New''')
-        self.Button1.configure(width=700)
+        self.startButton = tk.Button(top)
+        self.startButton.place(relx=0.065, rely=0.167, height=100, width=600)
+        self.startButton.configure(activebackground="#ececec")
+        self.startButton.configure(activeforeground="#000000")
+        self.startButton.configure(background="#fff")
+        self.startButton.configure(disabledforeground="#a3a3a3")
+        self.startButton.configure(font="-family {Segoe UI} -size 24")
+        self.startButton.configure(foreground="#500")
+        self.startButton.configure(highlightbackground="#d9d9d9")
+        self.startButton.configure(highlightcolor="black")
+        self.startButton.configure(pady="0")
+        self.startButton.configure(text='''Start New''')
+        #self.startButton.configure(command = startNew)
 
-        self.Button1_1 = tk.Button(top)
-        self.Button1_1.place(relx=0.035, rely=0.433, height=100, width=600)
-        self.Button1_1.configure(activebackground="#ececec")
-        self.Button1_1.configure(activeforeground="#000000")
-        self.Button1_1.configure(background="#fff")
-        self.Button1_1.configure(disabledforeground="#a3a3a3")
-        self.Button1_1.configure(font="-family {Segoe UI} -size 24")
-        self.Button1_1.configure(foreground="#500")
-        self.Button1_1.configure(highlightbackground="#d9d9d9")
-        self.Button1_1.configure(highlightcolor="black")
-        self.Button1_1.configure(pady="0")
-        self.Button1_1.configure(text='''Options''')
+        self.optionButton = tk.Button(top)
+        self.optionButton.place(relx=0.065, rely=0.433, height=100, width=600)
+        self.optionButton.configure(activebackground="#ececec")
+        self.optionButton.configure(activeforeground="#000000")
+        self.optionButton.configure(background="#fff")
+        self.optionButton.configure(disabledforeground="#a3a3a3")
+        self.optionButton.configure(font="-family {Segoe UI} -size 24")
+        self.optionButton.configure(foreground="#500")
+        self.optionButton.configure(highlightbackground="#d9d9d9")
+        self.optionButton.configure(highlightcolor="black")
+        self.optionButton.configure(pady="0")
+        self.optionButton.configure(text='''Options''')
+        self.optionButton.configure(command = lambda: optionMenu(top))
 
-        self.Button1_2 = tk.Button(top)
-        self.Button1_2.place(relx=0.035, rely=0.7, height=100, width=600)
-        self.Button1_2.configure(activebackground="#ececec")
-        self.Button1_2.configure(activeforeground="#000000")
-        self.Button1_2.configure(background="#fff")
-        self.Button1_2.configure(disabledforeground="#a3a3a3")
-        self.Button1_2.configure(font="-family {Segoe UI} -size 24")
-        self.Button1_2.configure(foreground="#500")
-        self.Button1_2.configure(highlightbackground="#d9d9d9")
-        self.Button1_2.configure(highlightcolor="black")
-        self.Button1_2.configure(pady="0")
-        self.Button1_2.configure(text='''Quit''')
+        self.quitButton = tk.Button(top)
+        self.quitButton.place(relx=0.065, rely=0.7, height=100, width=600)
+        self.quitButton.configure(activebackground="#ececec")
+        self.quitButton.configure(activeforeground="#000000")
+        self.quitButton.configure(background="#fff")
+        self.quitButton.configure(disabledforeground="#a3a3a3")
+        self.quitButton.configure(font="-family {Segoe UI} -size 24")
+        self.quitButton.configure(foreground="#500")
+        self.quitButton.configure(highlightbackground="#d9d9d9")
+        self.quitButton.configure(highlightcolor="black")
+        self.quitButton.configure(pady="0")
+        self.quitButton.configure(text='''Quit''')
+        self.quitButton.configure(command = top.quit)
 
         self.Message1 = tk.Message(top)
         self.Message1.place(relx=0.0, rely=0.0, relheight=0.167, relwidth=1.0)
