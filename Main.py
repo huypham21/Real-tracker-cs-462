@@ -22,6 +22,20 @@ except ImportError as e:
     
 import Main_support
 import OptionMenu_support
+import Counter_support
+import RPi.GPIO as GPIO
+import time
+GPIO.setmode(GPIO.BCM)
+
+TRIG=23
+ECHO = 24
+TRIG2 = 5
+ECHO2 = 6
+
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+GPIO.setup(TRIG2, GPIO.OUT)
+GPIO.setup(ECHO2, GPIO.IN)
 
 ######################################Global Variable Defaults######################################
 roomCap = 200
@@ -30,10 +44,17 @@ roomCount = 0
 totalCount = 0
 timeElapsed = 0
 maxPeople = 0
+avgPeople = 0
 timeIn = time.time()
 timeOut = time.time()
 eventName = ''
+inTrigger = 30
+outTrigger = 30
 ####################################################################################################
+def getRoomCap():
+    return roomCap
+def getEventName():
+    return eventName
 
 ########################## Option Menu ###############################
 def create_OptionMenu(root, *args, **kwargs):
@@ -73,7 +94,7 @@ class OptionMenu:
         _ana1color = '#d9d9d9' # X11 color: 'gray85'
         _ana2color = '#ececec' # Closest X11 color: 'gray92'
         top.geometry("700x400")
-        top.title("New Toplevel")
+        top.title("Option Menu")
         top.configure(background="#500")
         top.configure(pady="1")
 
@@ -82,7 +103,7 @@ class OptionMenu:
                 , relwidth=0.214)
         top.Spinbox1.configure(activebackground="#f9f9f9")
         top.Spinbox1.configure(background="white")
-        top.Spinbox1.configure(buttonbackground="#d9d9d9")
+        top.Spinbox1.configure(buttonbackground="#fff")
         top.Spinbox1.configure(disabledforeground="#a3a3a3")
         top.Spinbox1.configure(foreground="#500")
         top.Spinbox1.configure(highlightbackground="black")
@@ -140,6 +161,320 @@ class OptionMenu:
         top.Button1.configure(command = top.destroy)
 
 
+############################ Counter Window #################################
+def create_CounterWin(root, *args, **kwargs):
+    '''Starting point when module is imported by another program.'''
+    global w, w_win, rt
+    rt = root
+    w = tk.Toplevel (root)
+    top = CounterWin (w)
+    Counter_support.init(w, top, *args, **kwargs)
+    return (w, top)
+
+def destroy_CounterWin():
+    global w
+    w.destroy()
+    w = None
+def saveQuit(top):
+    #Save as json
+    top.destroy()
+
+class CounterWin:
+    roomCap = getRoomCap()
+    roomOcc = 0
+    roomCount = 0
+    totalCount = 0
+    timeElapsed = 0
+    maxPeople = 0
+    avgPeople = 0
+    timeIn = time.time()
+    timeOut = time.time()
+    eventName = getEventName()
+    inTrigger = 30
+    outTrigger = 30
+
+
+    def __init__(self, top=None):
+        '''This class configures and populates the toplevel window.
+           top is the toplevel containing window.'''
+        _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
+        _fgcolor = '#000000'  # X11 color: 'black'
+        _compcolor = '#d9d9d9' # X11 color: 'gray85'
+        _ana1color = '#d9d9d9' # X11 color: 'gray85'
+        _ana2color = '#ececec' # Closest X11 color: 'gray92'
+        top.style = ttk.Style()
+        if sys.platform == "win32":
+            top.style.theme_use('winnative')
+        top.style.configure('.',background=_bgcolor)
+        top.style.configure('.',foreground=_fgcolor)
+        top.style.map('.',background=
+            [('selected', _compcolor), ('active',_ana2color)])
+
+        top.geometry("700x400")
+        top.title("Counter")
+        top.configure(background="#500")
+        top.configure(highlightbackground="#d9d9d9")
+        top.configure(highlightcolor="black")
+
+        top.Message1 = tk.Message(top)
+        top.Message1.place(relx=0.0, rely=0.2, relheight=0.093, relwidth=0.189)
+        top.Message1.configure(background="#fff")
+        top.Message1.configure(foreground="#500")
+        top.Message1.configure(highlightbackground="#d9d9d9")
+        top.Message1.configure(highlightcolor="black")
+        top.Message1.configure(text='''Current Count:''')
+        top.Message1.configure(width=132)
+
+        top.Message1_1 = tk.Message(top)
+        top.Message1_1.place(relx=0.0, rely=0.375, relheight=0.093
+                , relwidth=0.189)
+        top.Message1_1.configure(background="#fff")
+        top.Message1_1.configure(foreground="#500")
+        top.Message1_1.configure(highlightbackground="#d9d9d9")
+        top.Message1_1.configure(highlightcolor="black")
+        top.Message1_1.configure(text='''Max Count:''')
+        top.Message1_1.configure(width=132)
+
+        top.Message1_2 = tk.Message(top)
+        top.Message1_2.place(relx=0.0, rely=0.55, relheight=0.093
+                , relwidth=0.189)
+        top.Message1_2.configure(background="#fff")
+        top.Message1_2.configure(foreground="#500")
+        top.Message1_2.configure(highlightbackground="#d9d9d9")
+        top.Message1_2.configure(highlightcolor="black")
+        top.Message1_2.configure(text='''Average Count:''')
+        top.Message1_2.configure(width=132)
+
+        top.Message1_1 = tk.Message(top)
+        top.Message1_1.place(relx=0.0, rely=0.725, relheight=0.093
+                , relwidth=0.189)
+        top.Message1_1.configure(background="#fff")
+        top.Message1_1.configure(font="-family {Segoe UI} -size 8")
+        top.Message1_1.configure(foreground="#500")
+        top.Message1_1.configure(highlightbackground="#d9d9d9")
+        top.Message1_1.configure(highlightcolor="black")
+        top.Message1_1.configure(text='''Room Occupancy:''')
+        top.Message1_1.configure(width=132)
+
+        top.Button1 = tk.Button(top)
+        top.Button1.place(relx=0.714, rely=0.0, height=50, width=200)
+        top.Button1.configure(activebackground="#ececec")
+        top.Button1.configure(activeforeground="#000")
+        top.Button1.configure(background="#fff")
+        top.Button1.configure(disabledforeground="#a3a3a3")
+        top.Button1.configure(foreground="#500")
+        top.Button1.configure(highlightbackground="#d9d9d9")
+        top.Button1.configure(highlightcolor="black")
+        top.Button1.configure(pady="0")
+        top.Button1.configure(text='''Options''')
+        top.Button1.configure(command = lambda: optionMenu(top))
+
+        top.Button2 = tk.Button(top)
+        top.Button2.place(relx=0.714, rely=0.125, height=50, width=200)
+        top.Button2.configure(activebackground="#ececec")
+        top.Button2.configure(activeforeground="#500")
+        top.Button2.configure(background="#fff")
+        top.Button2.configure(disabledforeground="#a3a3a3")
+        top.Button2.configure(foreground="#500")
+        top.Button2.configure(highlightbackground="#d9d9d9")
+        top.Button2.configure(highlightcolor="black")
+        top.Button2.configure(pady="0")
+        top.Button2.configure(text='''Save and Quit''')
+        top.Button2.configure(width=200)
+        top.Button2.configure(command = lambda: saveQuit(top))
+
+        top.CountDisp = tk.Message(top)
+        top.CountDisp.place(relx=0.2, rely=0.2, relheight=0.093, relwidth=0.046)
+        top.CountDisp.configure(background="#fff")
+        top.CountDisp.configure(foreground="#500")
+        top.CountDisp.configure(highlightbackground="#d9d9d9")
+        top.CountDisp.configure(highlightcolor="black")
+        top.CountDisp.configure(text=str(roomCount))
+        top.CountDisp.configure(width=90)
+
+        top.MaxDisp = tk.Message(top)
+        top.MaxDisp.place(relx=0.2, rely=0.375, relheight=0.093
+                , relwidth=0.046)
+        top.MaxDisp.configure(background="#fff")
+        top.MaxDisp.configure(foreground="#500")
+        top.MaxDisp.configure(highlightbackground="#d9d9d9")
+        top.MaxDisp.configure(highlightcolor="black")
+        top.MaxDisp.configure(text=str(maxPeople))
+        top.MaxDisp.configure(width=90)
+
+        top.AvgDisp = tk.Message(top)
+        top.AvgDisp.place(relx=0.2, rely=0.55, relheight=0.093
+                , relwidth=0.046)
+        top.AvgDisp.configure(background="#fff")
+        top.AvgDisp.configure(foreground="#500")
+        top.AvgDisp.configure(highlightbackground="#d9d9d9")
+        top.AvgDisp.configure(highlightcolor="black")
+        top.AvgDisp.configure(text=str(avgPeople))
+        top.AvgDisp.configure(width=90)
+
+        top.TProgressbar1 = ttk.Progressbar(top)
+        top.TProgressbar1.place(relx=0.2, rely=0.725, relwidth=0.214
+                , relheight=0.0, height=37)
+        top.TProgressbar1.configure(length="150")
+
+        top.PercMess = tk.Message(top)
+        top.PercMess.place(relx=0.429, rely=0.725, relheight=0.093
+                , relwidth=0.046)
+        top.PercMess.configure(background="#fff")
+        top.PercMess.configure(foreground="#500")
+        top.PercMess.configure(highlightbackground="#d9d9d9")
+        top.PercMess.configure(highlightcolor="black")
+        top.PercMess.configure(text=(str(1.8*roomCount / roomCap)+"%"))
+        top.PercMess.configure(width=90)
+
+        top.newFrame = tk.Frame()
+        top.newFrame.configure(text = "Please wait. Calibrating sensors")
+        startTracker(self)
+        top.newFrame.destroy()
+
+        distIn = abs(distance())
+        distOut = abs(distance2())
+        
+        if distIn < inTrigger:
+            InSense = True
+            print("In sensor triggered: %.1f" % distIn)
+            timeIn = time.time()
+        elif distOut < outTrigger:
+            OutSense = True
+            print("Out sensor triggered: %.1f" % distOut)
+            timeOut = time.time()
+        
+        if InSense == True:
+            #print("In")
+            if OutSense == True:
+                #print("Out")
+                if timeIn < timeOut:
+                    roomCount += 1
+                    totalCount += 1
+                    print("Person entered")
+                    InSense = False
+                    OutSense = False
+                    time.sleep(0.5)
+                elif timeIn > timeOut:
+                    roomCount -= 1
+                    if roomCount < 0:
+                        roomCount = 0
+                    print("Person exited")
+                    time.sleep(0.5)
+                    InSense = False
+                    OutSense = False
+                else:
+                    print("Same time")
+            elif time.time() > (timeIn + 0.25):
+                InSense = False
+                print("Too long before Out triggered")
+        
+        elif OutSense == True:
+            #print("Out (2nd)")
+            if time.time() > (timeOut + 0.25):
+                OutSense = False
+                print("Too long before In triggered")
+            elif InSense == True:
+                if timeIn < timeOut:
+                    roomCount += 1
+                    totalCount += 1
+                    print("Person entered")
+                    InSense = False
+                    OutSense = False
+                    time.sleep(0.5)
+                elif timeIn > timeOut:
+                    roomCount -= 1
+                    print("Person exited")
+                    time.sleep(0.5)
+                    InSense = False
+                    OutSense = False
+        timeElapsed = time.time() - start
+        print("time Elapsed == %.1f" % timeElapsed)
+        averagePeople = totalCount / timeElapsed
+        if roomCount > maxPeople:
+            maxPeople = roomCount
+        time.sleep(0.1)
+
+def startTracker(self):
+    print("Starting Tracker")
+    start = time.time()
+    current = time.time()
+    end = start +5
+    totalIn = distance()
+    averageIn = totalIn
+    count = 1
+    totalOut = distance2()
+    averageOut = totalOut
+    print("Please wait...calibrating sensors")
+    
+    while time.time() < end:
+        dist1 = distance()
+        dist2 = distance2()
+        count = count +1
+        totalIn = totalIn + dist1
+        totalOut = totalOut + dist2
+        averageIn = totalIn / count
+        averageOut = totalOut / count
+        time.sleep(0.1)
+    print("AverageIn == %.1f" % averageIn)
+    print("AverageOut == %.1f" % averageOut)
+    print("Over %d points " % count)
+    print("In trigger = %.1f" % (averageIn / 2))
+    print("Out trigger = %.1f" % (averageOut / 2))
+def distance():
+    #set Trigger to HIGH
+    GPIO.output(TRIG, True)
+
+    #set Trigger to LOW
+    time.sleep(0.0001)
+    GPIO.output(TRIG, False)
+
+    start_time = time.time()
+    stop_time = time.time()
+
+    #save StartTime
+    while GPIO.input(ECHO)==0:
+        start_time = time.time()
+
+    #save time of arrival
+    while GPIO.input(ECHO)==1:
+        stop_time = time.time()
+
+    #time difference between start and time of arrival
+    time_elapsed = start_time - stop_time
+    #multiply with the sonic speed (34300 cm/s)
+    #and divide it by 2, because there and back
+    distance = (time_elapsed * 34300)/2
+
+    return distance
+
+def distance2():
+    #set Trigger to HIGH
+    GPIO.output(TRIG2, True)
+
+    #set Trigger to LOW
+    time.sleep(0.0001)
+    GPIO.output(TRIG2, False)
+
+    start_time = time.time()
+    stop_time = time.time()
+
+    #save StartTime
+    while GPIO.input(ECHO2)==0:
+        start_time = time.time()
+
+    #save time of arrival
+    while GPIO.input(ECHO2)==1:
+        end_time = time.time()
+
+    #time difference between start and time of arrival
+    time_elapsed = start_time - end_time
+    #multiply with the sonic speed (34300 cm/s)
+    #and divide it by 2, because there and back
+    distance = (time_elapsed * 34300)/2
+
+    return distance
+
 ################################# Main Menu ##################################
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
@@ -164,8 +499,9 @@ def destroy_Toplevel1():
     w.destroy()
     w = None
 
-def startNew():
+def startNew(self):
         print("New Counter!")
+        create_CounterWin(self)
         #new Counter
 
 def optionMenu(self):
@@ -178,8 +514,6 @@ def closeIt(self):
 
 
 class Toplevel1:
-    
-
     def __init__(self, top=None):
         '''This class configures and populates the toplevel window.
            top is the toplevel containing window.'''
@@ -191,13 +525,13 @@ class Toplevel1:
         #top = tk.Frame
         top.configure()
         top.geometry("700x400")
-        top.title("New Toplevel")
+        top.title("Main Menu")
         top.configure(background="#500")
 
         self.startButton = tk.Button(top)
         self.startButton.place(relx=0.065, rely=0.167, height=100, width=600)
         self.startButton.configure(activebackground="#ececec")
-        self.startButton.configure(activeforeground="#000000")
+        self.startButton.configure(activeforeground="#500")
         self.startButton.configure(background="#fff")
         self.startButton.configure(disabledforeground="#a3a3a3")
         self.startButton.configure(font="-family {Segoe UI} -size 24")
@@ -206,12 +540,12 @@ class Toplevel1:
         self.startButton.configure(highlightcolor="black")
         self.startButton.configure(pady="0")
         self.startButton.configure(text='''Start New''')
-        #self.startButton.configure(command = startNew)
+        self.startButton.configure(command = lambda: startNew(top))
 
         self.optionButton = tk.Button(top)
         self.optionButton.place(relx=0.065, rely=0.433, height=100, width=600)
         self.optionButton.configure(activebackground="#ececec")
-        self.optionButton.configure(activeforeground="#000000")
+        self.optionButton.configure(activeforeground="#500")
         self.optionButton.configure(background="#fff")
         self.optionButton.configure(disabledforeground="#a3a3a3")
         self.optionButton.configure(font="-family {Segoe UI} -size 24")
@@ -225,7 +559,7 @@ class Toplevel1:
         self.quitButton = tk.Button(top)
         self.quitButton.place(relx=0.065, rely=0.7, height=100, width=600)
         self.quitButton.configure(activebackground="#ececec")
-        self.quitButton.configure(activeforeground="#000000")
+        self.quitButton.configure(activeforeground="#500")
         self.quitButton.configure(background="#fff")
         self.quitButton.configure(disabledforeground="#a3a3a3")
         self.quitButton.configure(font="-family {Segoe UI} -size 24")

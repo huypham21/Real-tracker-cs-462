@@ -99,8 +99,8 @@ if __name__ == '__main__':
         InSense = False
         timeOut = time.time()
         OutSense = False
-        peopleCount = 0
-        totalPeople = 0
+        roomCount = 0
+        totalCount = 0
         timeElapsed = 0
         maxPeople = 0
         averagePeople = 0
@@ -124,16 +124,16 @@ if __name__ == '__main__':
                 if OutSense == True:
                     #print("Out")
                     if timeIn < timeOut:
-                        peopleCount += 1
-                        totalPeople += 1
+                        roomCount += 1
+                        totalCount += 1
                         print("Person entered")
                         InSense = False
                         OutSense = False
                         time.sleep(0.5)
                     elif timeIn > timeOut:
-                        peopleCount -= 1
-                        if peopleCount < 0:
-                            peopleCount = 0
+                        roomCount -= 1
+                        if roomCount < 0:
+                            roomCount = 0
                         print("Person exited")
                         time.sleep(0.5)
                         InSense = False
@@ -151,29 +151,29 @@ if __name__ == '__main__':
                     print("Too long before In triggered")
                 elif InSense == True:
                     if timeIn < timeOut:
-                        peopleCount += 1
-                        totalPeople += 1
+                        roomCount += 1
+                        totalCount += 1
                         print("Person entered")
                         InSense = False
                         OutSense = False
                         time.sleep(0.5)
                     elif timeIn > timeOut:
-                        peopleCount -= 1
+                        roomCount -= 1
                         print("Person exited")
                         time.sleep(0.5)
                         InSense = False
                         OutSense = False
             timeElapsed = time.time() - start
             print("time Elapsed == %.1f" % timeElapsed)
-            averagePeople = totalPeople / timeElapsed
-            if peopleCount > maxPeople:
-                maxPeople = peopleCount
+            averagePeople = totalCount / timeElapsed
+            if roomCount > maxPeople:
+                maxPeople = roomCount
             time.sleep(0.1)
         #reset by pressing CTRL + C
     except:
             print("Measurement stopped by User")
-            print("Total people: %d" % totalPeople)
-            print("People inside at end: %d" % peopleCount)
+            print("Total people: %d" % totalCount)
+            print("People inside at end: %d" % roomCount)
             print("Average number of people: %d" % averagePeople)
             print("Max attendance: %d" % maxPeople)
             print("Total time running %.1f" % timeElapsed)
